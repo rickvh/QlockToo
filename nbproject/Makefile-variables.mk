@@ -1,0 +1,13 @@
+#
+# Generated - do not edit!
+#
+# NOCDDL
+#
+CND_BASEDIR=`pwd`
+# C18_18F4550 configuration
+CND_ARTIFACT_DIR_C18_18F4550=dist/C18_18F4550/production
+CND_ARTIFACT_NAME_C18_18F4550=QlockToo.X.production.hex
+CND_ARTIFACT_PATH_C18_18F4550=dist/C18_18F4550/production/QlockToo.X.production.hex
+CND_PACKAGE_DIR_C18_18F4550=${CND_DISTDIR}/C18_18F4550/package
+CND_PACKAGE_NAME_C18_18F4550=qlocktoo.x.tar
+CND_PACKAGE_PATH_C18_18F4550=${CND_DISTDIR}/C18_18F4550/package/qlocktoo.x.tar

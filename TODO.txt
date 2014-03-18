@@ -1,0 +1,70 @@
+- i2c setup
+  - loopt klok niet -> enter first time setup
+- opschonen main.c etc
+- BROWN out reset inschakelen
+- Watchdogtimer inschakelen
+- STVREN = ON          //stack overflow/underflow reset enabled
+- settings EEPROM
+
+HARDWARE
+v i2c
+v backup batterij
+v LDR
+v buttons
+  v debounce
+v leds
+
+
+MUST:
+- button1-kort:
+    - klok
+    - seconden
+- button2-kort:
+    -
+- button1-lang:
+    - save current settings
+- button2-lang:
+    - enter settings
+- beide:
+    - ext-modes
+
+
+
+
+
+
+
+SHOULD:
+v uart read werkend (soort van)
+- uart command dispatching
+  RTC
+  - char, [arg], actie
+  - 0x02, year, rtc set year
+  - 0x04, month, rtc set month
+  - 0x06, day, rtc set day
+  - 0x08, hour, rtc set hour
+  - 0x0A, minute, rtc set minute
+  - 0x0C, sec, rtc set sec
+  - 0x12, year, rtc get year
+  - 0x14, month, rtc get month
+  - 0x16, day, rtc get day
+  - 0x18, hour, rtc get hour
+  - 0x1A, minute, rtc get minute
+  - 0x1C, sec, rtc get sec
+  LDR
+  - 0x20, read ldr
+  BUTTONS
+  - 0x30, read button 1
+  - 0x32, read button 2
+  LEDS
+  - 0x41, byte1, byte2, write row1 of screenbuffer
+  - 0x42, byte1, byte2, write row2 of screenbuffer
+  - ...
+  - 0x4B, byte1, byte2, write row11 of screenbuffer
+  - 0x4F, init led display
+  INTERRUPTS
+  - 0x50, enable interrupts
+  - 0x52, disable interrupts
+  START
+  - 0x60, detach uart & start main loop
+
