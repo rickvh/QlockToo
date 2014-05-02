@@ -14,20 +14,28 @@
 #include "buttons.h"
 #include "characters.h"
 
+#define FIRMWARE_VERSION            0x002428// Firmware version is located here
+                                            // 3 bytes: Major Ver, Minor Ver, FW Valid
+#define MAJOR_FW_VAL                '0'     // Firmware Version 0.1 (ASCII)
+#define	MINOR_FW_VAL				'1'
+#define	FW_VALID                    0xAA    // Flag to indicate valid firmware
+
 #define MODE_CLOCK              0
 #define MODE_SECONDS            1
 #define MODE_BRIGHTNESS         2
 #define MODE_TIME_SET_HOURS     3
 #define MODE_TIME_SET_MINS      4
-//#define MODE_BRIGHTNESS_MODE    6
-//#define MODE_CORNER_MODE        7
+//#define MODE_BRIGHTNESS_MODE  6
+//#define MODE_CORNER_MODE      7
 #define MODE_LEDTEST            5
 #define MODE_ANIMATION_1        6
-//#define MODE_ANIMATION_2        10
-//#define MODE_ANIMATION_3        11
+//#define MODE_ANIMATION_2      10
+//#define MODE_ANIMATION_3      11
 #define MODE_OFF                7
-//#define MODE_ALL                8
+//#define MODE_ALL              8
 
+
+const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, MINOR_FW_VAL, FW_VALID};
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
