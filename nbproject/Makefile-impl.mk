@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=QlockToo.X
 
 # Active Configuration
-DEFAULTCONF=C18_18F4550
+DEFAULTCONF=18F4550_for_bootloader
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=C18_18F4550 
+ALLCONFS=18F4550_for_bootloader 18F4550 
 
 
 # build
@@ -45,13 +45,15 @@ ALLCONFS=C18_18F4550
 
 # clobber
 .clobber-impl: .clobber-pre .depcheck-impl
-	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=C18_18F4550 clean
+	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=18F4550_for_bootloader clean
+	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=18F4550 clean
 
 
 
 # all
 .all-impl: .all-pre .depcheck-impl
-	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=C18_18F4550 build
+	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=18F4550_for_bootloader build
+	    ${MAKE} SUBPROJECTS=${SUBPROJECTS} CONF=18F4550 build
 
 
 

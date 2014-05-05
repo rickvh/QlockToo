@@ -1,6 +1,6 @@
 /* 
  * File:   buttons.h
- * Author: Rick
+ * Author: Rick van Hal
  *
  * Created on 25 april 2013, 22:01
  */

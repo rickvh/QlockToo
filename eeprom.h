@@ -2,7 +2,7 @@
 #include "configuration.h"
 /* 
  * File:   eeprom.h
- * Author: Rick
+ * Author: Rick van Hal
  *
  * Created on 15 mei 2013, 22:33
  */

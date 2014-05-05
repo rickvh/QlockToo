@@ -1,6 +1,6 @@
 /* 
  * File:   leddriver.h
- * Author: Rick
+ * Author: Rick van Hal
  *
  * Created on 16 april 2013, 21:13
  * 
@@ -38,9 +38,12 @@
 #define COLUMN_PINS_OFF() LATA &= 0b11000001; LATB &= 0b10000111; LATC &= 0b11111100
 
 /**
- * Screenbuffer for LED-display. Every byte represents a single row.
+ * Screenbuffer for LED-display. Every int represents a single row.
  */
 extern unsigned int leddriver_screenbuffer[11];
+/**
+ * Current brightness. High = bright, Low = dim
+ */
 extern unsigned int leddriver_brightness;
 
 void leddriver_init();

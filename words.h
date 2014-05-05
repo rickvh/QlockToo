@@ -1,6 +1,6 @@
 /* 
  * File:   words.h
- * Author: Rick
+ * Author: Rick van Hal
  *
  * Created on 28 april 2013, 22:54
  */
@@ -36,11 +36,9 @@
 #define NL_VIJF         leddriver_screenbuffer[0] |= 0b0000000111100000
 #define NL_TIEN         leddriver_screenbuffer[1] |= 0b1111000000000000
 #define NL_KWART        leddriver_screenbuffer[2] |= 0b0000001111100000
-#define NL_ZWANZIG      leddriver_screenbuffer[1] |= 0b0000111111100000
 #define NL_HALF         leddriver_screenbuffer[3] |= 0b1111000000000000
 
 #define NL_H_EEN        leddriver_screenbuffer[4] |= 0b0000000111000000
-#define NL_H_EENS       leddriver_screenbuffer[4] |= 0b0000000111100000
 #define NL_H_TWEE       leddriver_screenbuffer[5] |= 0b1111000000000000
 #define NL_H_DRIE       leddriver_screenbuffer[5] |= 0b0000000111100000
 #define NL_H_VIER       leddriver_screenbuffer[6] |= 0b1111000000000000

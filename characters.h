@@ -1,6 +1,6 @@
 /* 
  * File:   characters.h
- * Author: Rick
+ * Author: Rick van Hal
  *
  * Created on 28 april 2013, 22:11
  */

@@ -1,6 +1,6 @@
 /* 
  * File:   ldr.h
- * Author: Rick
+ * Author: Rick van Hal
  *
  * Created on 18 april 2013, 22:42
  */

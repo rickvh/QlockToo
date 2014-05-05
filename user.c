@@ -60,7 +60,6 @@ void InitQlockToo(void)
 #endif
 
 
-    /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
 
 }
 

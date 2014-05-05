@@ -1,6 +1,6 @@
 /* 
  * File:   rtc.h
- * Author: Rick
+ * Author: Rick van Hal
  *
  * Created on 22 december 2012, 22:09
  */

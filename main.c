@@ -14,11 +14,16 @@
 #include "buttons.h"
 #include "characters.h"
 
+/******************************************************************************/
+/* For use with USB-MSD bootloader                                            */
+/******************************************************************************/
 #define FIRMWARE_VERSION            0x002428// Firmware version is located here
                                             // 3 bytes: Major Ver, Minor Ver, FW Valid
-#define MAJOR_FW_VAL                '0'     // Firmware Version 0.1 (ASCII)
-#define	MINOR_FW_VAL				'1'
+#define MAJOR_FW_VAL                '0'     // Firmware Version 0.2 (ASCII)
+#define	MINOR_FW_VAL                '2'
 #define	FW_VALID                    0xAA    // Flag to indicate valid firmware
+/******************************************************************************/
+
 
 #define MODE_CLOCK              0
 #define MODE_SECONDS            1
@@ -33,6 +38,7 @@
 //#define MODE_ANIMATION_3      11
 #define MODE_OFF                7
 //#define MODE_ALL              8
+#define MODE_DEBUG              99
 
 
 const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, MINOR_FW_VAL, FW_VALID};
@@ -40,8 +46,8 @@ const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, M
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
-uint8_t current_mode, current_char;
-bool rtc_updated, settings_updated, time_set;
+uint8_t current_mode, reset_cause;
+bool rtc_updated, settings_updated, time_set, usb_attached_at_start;
 uint16_t i,j, tmp_uur, tmp_min;//just a simple counter
 uint8_t time_sec, time_min, time_hour;
 uint16_t temprow, currentrow;
@@ -54,6 +60,25 @@ struct settings *settingsptr = {0};
 
 void main(void)
 {
+    // detect reset cause
+    reset_cause = 0;
+    if (! nPOR) // Power-on-reset
+    {
+        reset_cause |= 0x01;
+        nPOR = 1;
+        nBOR = 1;
+    }
+    if (!nBOR) // Brown-out-reset
+    {
+        reset_cause |= 0x02;
+        nBOR = 1;
+    }
+    if (reset_cause > 0)
+    {
+        current_mode = MODE_DEBUG;
+    }
+
+
     i=0;
 
     /* Configure the oscillator for the device */
@@ -61,6 +86,7 @@ void main(void)
 
     /* Initialize I/O and Peripherals for application */
     InitQlockToo();
+    usb_attached_at_start = USB_ATTACHED;
     // TODO
     /*if (rtc_not_running)
     {
@@ -143,6 +169,12 @@ void main(void)
             rtc_updated = 0;
         }
 
+        if (!usb_attached_at_start && USB_ATTACHED)
+        {
+            // enter bootloader
+            Reset(); 
+        }
+
         i = 5;
         while(i--)
         {
@@ -151,6 +183,12 @@ void main(void)
 
         switch(current_mode)
         {
+            case MODE_DEBUG:
+                leddriver_clear();
+                for (i = 0; i < 7; i++) {
+                    leddriver_screenbuffer[1 + i] |= numbers[reset_cause][i] << 11;
+                }
+                break;
             case MODE_CLOCK:
                 leddriver_clear();
                 leddriver_setMinutes(time_hour, time_min);
