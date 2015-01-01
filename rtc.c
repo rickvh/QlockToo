@@ -38,7 +38,9 @@ unsigned char rtcGetHours(void)
 }
 
 
-// schrijf seconden
+// enable RTC.
+// TODO: Init should only be called when RTC is not yet initialised, as
+// writing the enabled flag will reset seconds.
 void InitRtc(void)
 {
     StartI2C(); // begin I2C communication
@@ -51,8 +53,6 @@ void InitRtc(void)
     IdleI2C();
     StopI2C();
 
-
-    // TODO: alleen de klok 'aanzetten' indien deze nog niet loopt
     // init: SQWE @1Hz
     StartI2C(); // begin I2C communication
     IdleI2C();
