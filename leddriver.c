@@ -157,7 +157,7 @@ void leddriver_setMinutes(unsigned char hours, unsigned char minutes)
       setHours(hours + 1, false);
       break;
     case 9:
-      // viertel voor
+      // kwart voor
       NL_KWART;
       NL_VOOR2;
       setHours(hours + 1, false);

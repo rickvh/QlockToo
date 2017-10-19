@@ -19,25 +19,27 @@
 /******************************************************************************/
 #define FIRMWARE_VERSION            0x002428// Firmware version is located here
                                             // 3 bytes: Major Ver, Minor Ver, FW Valid
-#define MAJOR_FW_VAL                '0'     // Firmware Version 0.2 (ASCII)
-#define	MINOR_FW_VAL                '2'
+#define MAJOR_FW_VAL                '0'     // Firmware Version 0.4 (ASCII)
+#define	MINOR_FW_VAL                '4'
 #define	FW_VALID                    0xAA    // Flag to indicate valid firmware
 /******************************************************************************/
 
 
 #define MODE_CLOCK              0
 #define MODE_SECONDS            1
-#define MODE_BRIGHTNESS         2
-#define MODE_TIME_SET_HOURS     3
-#define MODE_TIME_SET_MINS      4
-//#define MODE_BRIGHTNESS_MODE  6
-//#define MODE_CORNER_MODE      7
-#define MODE_LEDTEST            5
-#define MODE_ANIMATION_1        6
-//#define MODE_ANIMATION_2      10
-//#define MODE_ANIMATION_3      11
-#define MODE_OFF                7
-//#define MODE_ALL              8
+#define MODE_BRIGHTNESS         99
+#define MODE_TIME_SET_HOURS     2
+#define MODE_TIME_SET_MINS      3
+#define MODE_BRIGHTNESS_MODE  99
+#define MODE_CORNER_MODE      99
+#define MODE_LEDTEST            4
+#define MODE_LEDTEST_MANUAL            5
+#define MODE_ANIMATION_1        99
+#define MODE_ANIMATION_2      99
+#define MODE_ANIMATION_3      99
+#define MODE_OFF                6
+#define MODE_ALL                7
+#define MODE_LDR                99
 #define MODE_DEBUG              99
 
 
@@ -49,7 +51,7 @@ const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, M
 uint8_t current_mode, reset_cause;
 bool rtc_updated, settings_updated, time_set, usb_attached_at_start;
 uint16_t i,j, tmp_uur, tmp_min;//just a simple counter
-uint8_t time_sec, time_min, time_hour;
+uint8_t time_sec, time_min, time_hour, ldr_value;
 uint16_t temprow, currentrow;
 struct settings *settingsptr = {0};
 
@@ -73,11 +75,28 @@ void main(void)
         reset_cause |= 0x02;
         nBOR = 1;
     }
-    if (reset_cause > 0)
+    if (STKFUL) // Stack-overflow
+    {
+        reset_cause |= 0x04;
+        STKFUL = 0;
+    }
+    if (STKOVF) // Stack-underflow
+    {
+        reset_cause |= 0x08;
+        STKOVF = 0;
+    }
+/*
+        i = 240;
+        while(i--)
+        {
+            __delay_ms(10);
+        }
+
+/*    if (reset_cause > 0)
     {
         current_mode = MODE_DEBUG;
     }
-
+*/
 
     i=0;
 
@@ -88,13 +107,13 @@ void main(void)
     InitQlockToo();
     usb_attached_at_start = USB_ATTACHED;
     // TODO
-    /*if (rtc_not_running)
-    {
+//    if (rtc_not_running)
+//    {
         InitRtc();
-    }*/
+//    }
     loadSettings(settingsptr);
     leddriver_init();
-    leddriver_brightness = settingsptr->brightness;
+    leddriver_brightness = 9;//settingsptr->brightness;
 
     INT2IE = 1;
     T0IE = 1;
@@ -111,7 +130,7 @@ void main(void)
             if (settings_updated)
             {
                 saveSettings(settingsptr);
-                int_EEPROM_putc(0x13, settingsptr->brightness);
+//                int_EEPROM_putc(0x13, settingsptr->brightness);
                 settings_updated = false;
             }
 
@@ -123,7 +142,7 @@ void main(void)
             GIE = 1;
 
             current_mode++;
-            if (current_mode > MODE_OFF)
+            if (current_mode > MODE_ALL)
                 current_mode = 0;
         }
 
@@ -136,6 +155,7 @@ void main(void)
                     if (++settingsptr->brightness >= 10)
                         settingsptr->brightness = 0;
                     leddriver_brightness = settingsptr->brightness;
+                    //settings_updated = true;
                     break;
 //                case MODE_BRIGHTNESS_MODE:
 //                    if (++settingsptr->brightnessMode > 1)
@@ -156,6 +176,44 @@ void main(void)
                     rtcSetMinutes(time_min);
                     rtcSetSeconds(0);
                     time_set = true;
+                    break;
+                case MODE_LEDTEST_MANUAL:
+                    temprow = temprow >> 1;
+                    if (temprow < 0x0020)
+                    {
+                        temprow = 0x8000;
+                        if (time_min % 10 == 1) // 1100
+                        {
+                            temprow = 0xC000;
+                        }
+                        if (time_min % 10 == 2) // 1110
+                        {
+                            temprow = 0xE000;
+                        }
+                        if (time_min % 10 == 3) // 1111
+                        {
+                            temprow = 0xF000;
+                        }
+                        if (time_min % 10 == 4) // 1001
+                        {
+                            temprow = 0x9000;
+                        }
+                        if (time_min % 10 == 5) // 1010
+                        {
+                            temprow = 0xA000;
+                        }
+                        if (time_min % 10 == 6) // 1011
+                        {
+                            temprow = 0xD000;
+                        }
+                        currentrow++;
+                        if (currentrow > 9)
+                        {
+                            currentrow = 0;
+                        }
+                    }
+                    break;
+                default:
                     break;
             }
         }
@@ -192,7 +250,7 @@ void main(void)
             case MODE_CLOCK:
                 leddriver_clear();
                 leddriver_setMinutes(time_hour, time_min);
-                if (settingsptr->cornerMode == CORNERMODE_ON)
+                //if (settingsptr->cornerMode == CORNERMODE_ON)
                     leddriver_setCorners(time_min);
                 break;
             case MODE_SECONDS:
@@ -257,6 +315,10 @@ void main(void)
                 leddriver_clear();
                 leddriver_screenbuffer[currentrow] = temprow;
                 break;
+            case MODE_LEDTEST_MANUAL:
+                leddriver_clear();
+                leddriver_screenbuffer[currentrow] = temprow;
+                break;
             case MODE_ANIMATION_1:
                 leddriver_clear();
                 for (i=0; i<11; i++)
@@ -273,12 +335,20 @@ void main(void)
 //            case MODE_ANIMATION_3:
 //                leddriver_screenbuffer[0] = 0x0100;
 //                break;
-//            case MODE_ALL:
-//                for (i=0; i<11; i++)
-//                {
-//                    leddriver_screenbuffer[i] = 0xFFFF;
-//                }
-//                break;
+            case MODE_ALL:
+                for (i=0; i<11; i++)
+                {
+                    leddriver_screenbuffer[i] = 0xFFFF;
+                }
+                break;
+            case MODE_LDR:
+                leddriver_clear();
+                for (i=0; i<11; i++)
+                {
+                    if (i < ldr_read() /10)
+                        leddriver_screenbuffer[i] = 0xFFFF;
+                }
+                break;
             default:
                 break;
         }

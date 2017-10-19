@@ -53,7 +53,7 @@
 #pragma config  IESO = OFF			// Int/Ext Switchover Mode
 #pragma config	PWRT = ON			// PWRT Enabled
 #pragma config	BOR = ON			// Hardware Brown-Out Reset
-#pragma config	BORV = 2			// 2.75 BOR Level
+#pragma config	BORV = 1			// 4.33 BOR Level
 #pragma config	VREGEN = ON			// USB voltage Regulator Enabled
 #pragma config  WDT = OFF			// No Watchdog Timer
 #pragma config  WDTPS = 256                     // Watchdog Timer Prescaler
