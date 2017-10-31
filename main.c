@@ -27,20 +27,20 @@
 
 #define MODE_CLOCK              0
 #define MODE_SECONDS            1
-#define MODE_BRIGHTNESS         99
-#define MODE_TIME_SET_HOURS     2
-#define MODE_TIME_SET_MINS      3
-#define MODE_BRIGHTNESS_MODE  99
-#define MODE_CORNER_MODE      99
-#define MODE_LEDTEST            4
-#define MODE_LEDTEST_MANUAL            5
-#define MODE_ANIMATION_1        99
-#define MODE_ANIMATION_2      99
-#define MODE_ANIMATION_3      99
-#define MODE_OFF                6
-#define MODE_ALL                7
-#define MODE_LDR                99
-#define MODE_DEBUG              99
+#define MODE_BRIGHTNESS         2
+#define MODE_TIME_SET_HOURS     3
+#define MODE_TIME_SET_MINS      4
+#define MODE_BRIGHTNESS_MODE  5
+#define MODE_CORNER_MODE      6
+#define MODE_LEDTEST            7
+#define MODE_LEDTEST_MANUAL            8
+#define MODE_ANIMATION_1        9
+#define MODE_ANIMATION_2      10
+#define MODE_ANIMATION_3      11
+#define MODE_OFF                12
+#define MODE_ALL                13
+#define MODE_LDR                14
+#define MODE_DEBUG              15
 
 
 const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, MINOR_FW_VAL, FW_VALID};
