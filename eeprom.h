@@ -1,4 +1,5 @@
 #include <stdint.h>        /* For uint8_t definition */
+#include <stdbool.h>
 #include "configuration.h"
 /* 
  * File:   eeprom.h
@@ -18,19 +19,19 @@
 #define CORNERMODE_OFF      0
 #define CORNERMODE_ON       1
 
-struct settings{
+struct QLOCKTOO_SETTINGS{
     uint8_t brightness;
     uint8_t brightnessMode;
     uint8_t energysaveMode;
-    uint8_t cornerMode;
+    bool showMinutes;
 };
 
 void int_EEPROM_putc(unsigned char address, unsigned char data);
 unsigned char int_EEPROM_getc(unsigned char address);
 
-void loadSettings(struct settings *settingsptr);
+void loadSettings(struct QLOCKTOO_SETTINGS *settingsptr);
 
-void saveSettings(struct settings *settingsptr);
+void saveSettings(struct QLOCKTOO_SETTINGS *settingsptr);
 
 #endif	/* EEPROM_H */
 

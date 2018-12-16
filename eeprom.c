@@ -9,7 +9,7 @@
 //unsigned char int_EEPROM_getc(unsigned char address);
 
 
-void loadSettings(struct settings *settingsptr)
+void loadSettings(struct QLOCKTOO_SETTINGS *settingsptr)
 {
     settingsptr->brightness = 5;
 
@@ -26,7 +26,7 @@ void loadSettings(struct settings *settingsptr)
  * WARNING: User must take care to disable interrupts before calling!!
  * @param settingsptr settings
  */
-void saveSettings(struct settings *settingsptr)
+void saveSettings(struct QLOCKTOO_SETTINGS *settingsptr)
 {
     int_EEPROM_putc(0x12, settingsptr->brightness);
 

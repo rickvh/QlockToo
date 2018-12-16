@@ -29,7 +29,9 @@ void InitQlockToo(void)
     PORTBbits.RB0 = 0;
     PORTBbits.RB1 = 0;
     OpenI2C(MASTER, SLEW_OFF);
-    SSPADD = 49;            //Baud rate generator value, see formula in the answer (20MHZ=49)
+    
+    // TODO: aanpassen aan 48MHZ
+    SSPADD = 119;            // Clock generator: SSPADD = ((Fosc/Bitrate)/4)-1
 
 
     /* Setup buttons */
