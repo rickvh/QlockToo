@@ -13,6 +13,7 @@
 #include "ldr.h"
 #include "buttons.h"
 #include "characters.h"
+#include "i2c_slave.h"
 
 /******************************************************************************/
 /* For use with USB-MSD bootloader                                            */
@@ -22,6 +23,8 @@
 #define MAJOR_FW_VAL                '0'     // Firmware Version 0.5 (ASCII)
 #define	MINOR_FW_VAL                '5'
 #define	FW_VALID                    0xAA    // Flag to indicate valid firmware
+
+#define I2C_SLAVE_ADDR              0xB0
 /******************************************************************************/
 
 
@@ -34,10 +37,11 @@
 #define MODE_SHOW_MINUTES       6
 #define MODE_LEDTEST            7
 #define MODE_LEDTEST_MANUAL     8
-#define MODE_ANIMATION_1        9
-#define MODE_OFF                10
-#define MODE_ALL                11
-#define MODE_LDR                12
+#define MODE_SLAVE              9
+#define MODE_ANIMATION_1        10
+#define MODE_OFF                11
+#define MODE_ALL                12
+#define MODE_LDR                13
 
 
 const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, MINOR_FW_VAL, FW_VALID};
@@ -47,6 +51,7 @@ const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, M
 /******************************************************************************/
 uint8_t current_mode;
 volatile bool rtc_updated;
+volatile bool slave_enabled;
 bool settings_updated, time_set, usb_attached_at_start;
 uint16_t i,j, tmp_uur, tmp_min;//just a simple counter
 uint8_t time_sec, time_min, time_hour, time_dow, ldr_value;
@@ -176,6 +181,17 @@ void main(void)
                         }
                     }
                     break;
+                case MODE_SLAVE:
+                    slave_enabled = !slave_enabled;
+                    if (slave_enabled)
+                    {
+                        i2cInitSlave(I2C_SLAVE_ADDR);
+                    }
+                    else
+                    {
+                        i2cInitMaster();
+                    }
+                    break;
                 default:
                     break;
             }
@@ -298,6 +314,12 @@ void main(void)
                     __delay_ms(1);
                 }
                 break;
+            case MODE_SLAVE:
+                leddriver_clear();
+                leddriver_screenbuffer[0] = slave_enabled ? 0xF000 : 0x0F00;
+                leddriver_screenbuffer[2] = getI2CRegister() << 8;
+                leddriver_screenbuffer[3] = getI2CData() << 8;
+                break;
             case MODE_ALL:
                 for (i=0; i<11; i++)
                 {
@@ -341,6 +363,11 @@ void interrupt isr(void)
     {
         rtc_updated = 1;
         INT2IF = 0;                         // Clear Interrupt Flag
+    }
+    else if (SSPIF && slave_enabled)
+    {
+        handleI2CISR();
+        SSPIF = 0;                          // Clear Interrupt Flag
     }
     else
     {

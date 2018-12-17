@@ -11,3 +11,5 @@
 /* TODO User level functions prototypes (i.e. InitApp) go here */
 
 void InitQlockToo(void);         /* I/O and Peripheral Initialization */
+void i2cInitMaster(void);
+void i2cInitSlave(unsigned char address);

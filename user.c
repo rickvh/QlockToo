@@ -23,15 +23,7 @@ void InitQlockToo(void)
     OpenUART();
 #endif
 
-    /* Setup I2C */
-    TRISBbits.TRISB0 = 0;   // SDA
-    TRISBbits.TRISB1 = 0;   // SCL
-    PORTBbits.RB0 = 0;
-    PORTBbits.RB1 = 0;
-    OpenI2C(MASTER, SLEW_OFF);
-    
-    // TODO: aanpassen aan 48MHZ
-    SSPADD = 119;            // Clock generator: SSPADD = ((Fosc/Bitrate)/4)-1
+    i2cInitMaster();
 
 
     /* Setup buttons */
@@ -42,7 +34,7 @@ void InitQlockToo(void)
 #endif
 
     /* Setup interrupts sources */
-    INTEDG2 = 1;    // INT2 interrupt on rising edge
+    INTEDG2 = 1;    // INT2 interrupt on rising edge; this is when RTC notifies us that one second has elapsed.
     INT2IE = 1;
 #ifdef DEBUG
     T0CON = 0x8D;   // Timer0 enabled: 16-bit, internal clock, prescaler 1:64
@@ -65,3 +57,17 @@ void InitQlockToo(void)
 
 }
 
+void i2cInitMaster()
+{
+    /* Setup I2C */
+    OpenI2C(MASTER, SLEW_OFF);
+    // TODO: aanpassen aan 48MHZ
+    SSPADD = 119;            // Clock generator: SSPADD = ((Fosc/Bitrate)/4)-1
+}
+
+void i2cInitSlave(unsigned char slaveAddress)
+{
+    OpenI2C(SLAVE_7_STSP_INT, SLEW_OFF);
+    SSPADD = slaveAddress;
+    SEN = 1;                // Clock stretching enabled
+}
