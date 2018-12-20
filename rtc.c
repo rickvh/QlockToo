@@ -2,9 +2,9 @@
 #include <plib/i2c.h>
 #include "rtc.h"
 
-// DS1307 address: 1101000 = 0xD0
-#define DS1307_ADDRESS_READ     0xD1
-#define DS1307_ADDRESS_WRITE    0xD0
+// DS1307 address: 1101000 = 0x68
+#define DS1307_ADDRESS_READ     0xD1    // 0x68 << 1 & 0x01
+#define DS1307_ADDRESS_WRITE    0xD0    // 0x68 << 1 & 0x00
 
 unsigned char _hours, _minutes, _seconds;
 

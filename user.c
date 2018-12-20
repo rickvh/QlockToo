@@ -6,6 +6,7 @@
 
 #include "configuration.h"
 #include "user.h"
+#include "i2c_slave.h"
 
 /******************************************************************************/
 /* User Functions                                                             */
@@ -59,15 +60,19 @@ void InitQlockToo(void)
 
 void i2cInitMaster()
 {
+    SSPIE = 0;
     /* Setup I2C */
     OpenI2C(MASTER, SLEW_OFF);
     // TODO: aanpassen aan 48MHZ
     SSPADD = 119;            // Clock generator: SSPADD = ((Fosc/Bitrate)/4)-1
 }
 
-void i2cInitSlave(unsigned char slaveAddress)
+void i2cInitSlave()
 {
+    TRISC |= 0b00011000;    // TRISC 3&4 (SCL & SDA) inputs
+    SSPADD = I2C_SLAVE_ADDR;
     OpenI2C(SLAVE_7_STSP_INT, SLEW_OFF);
-    SSPADD = slaveAddress;
     SEN = 1;                // Clock stretching enabled
+    SSPIF = 0;
+    SSPIE = 1;
 }

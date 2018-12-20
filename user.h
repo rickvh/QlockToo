@@ -12,4 +12,4 @@
 
 void InitQlockToo(void);         /* I/O and Peripheral Initialization */
 void i2cInitMaster(void);
-void i2cInitSlave(unsigned char address);
+void i2cInitSlave(void);

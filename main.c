@@ -24,7 +24,6 @@
 #define	MINOR_FW_VAL                '5'
 #define	FW_VALID                    0xAA    // Flag to indicate valid firmware
 
-#define I2C_SLAVE_ADDR              0xB0
 /******************************************************************************/
 
 
@@ -55,6 +54,7 @@ volatile bool slave_enabled;
 bool settings_updated, time_set, usb_attached_at_start;
 uint16_t i,j, tmp_uur, tmp_min;//just a simple counter
 uint8_t time_sec, time_min, time_hour, time_dow, ldr_value;
+volatile uint16_t debug_value = 0x8000;
 uint16_t temprow, currentrow;
 struct QLOCKTOO_SETTINGS settings = { 9, 0, 0, true };
 
@@ -83,9 +83,10 @@ void main(void)
     leddriver_init();
     leddriver_brightness = 9;//settingsptr->brightness;
 
-    INT2IE = 1;
+    INT2IE = 1; // TODO: opschonen, want staat ook in user.c
     T0IE = 1;
     GIE = 1;
+    PEIE = 1;
 
     // main loop
     while(1)
@@ -185,7 +186,7 @@ void main(void)
                     slave_enabled = !slave_enabled;
                     if (slave_enabled)
                     {
-                        i2cInitSlave(I2C_SLAVE_ADDR);
+                        i2cInitSlave();
                     }
                     else
                     {
@@ -317,6 +318,7 @@ void main(void)
             case MODE_SLAVE:
                 leddriver_clear();
                 leddriver_screenbuffer[0] = slave_enabled ? 0xF000 : 0x0F00;
+                leddriver_screenbuffer[1] = debug_value;
                 leddriver_screenbuffer[2] = getI2CRegister() << 8;
                 leddriver_screenbuffer[3] = getI2CData() << 8;
                 break;
@@ -358,19 +360,20 @@ void interrupt isr(void)
         TMR0 = 0x80;
         TMR0IF = 0;                         // Clear Interrupt Flag
     }
+    
     // INTERRUPT PIN INT2 (RTC signals every 1 second)
     else if(INT2IF)
     {
         rtc_updated = 1;
         INT2IF = 0;                         // Clear Interrupt Flag
     }
+    
+    // I2C SLAVE
     else if (SSPIF && slave_enabled)
     {
-        handleI2CISR();
+        unsigned int teee = handleI2CISR();
+        if (teee != 0x2000)
+            debug_value = teee;
         SSPIF = 0;                          // Clear Interrupt Flag
-    }
-    else
-    {
-        /* Unhandled interrupts */
     }
 }

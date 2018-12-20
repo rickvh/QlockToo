@@ -4,58 +4,86 @@
 #include "i2c_slave.h"
 #include "leddriver.h"
 
-unsigned char registers[255];
-unsigned char pointer;
-bool read = false;
-bool firstWrite = false;
+volatile unsigned char i2c_reg_addr     = 0;
+volatile unsigned char i2c_reg_map[16]  = {0,};
+volatile unsigned char i2c_byte_count   = 0;
 
-void handleI2CISR()
+// TODO: implementeer hier gewoon een statemachine!!!!
+// ben je nu devver of niet ?!
+
+// https://github.com/harrybraviner/I2C_slave_example/blob/master/web_PIC18F45K20.c
+
+unsigned int handleI2CISR()
 {
-    if (! BF)
-    {
-        // error?
-        CKP = 1; // hele 'if' moet weg als dat kan!
-        return;
-    }
+    unsigned char sspBuf;
     
-    if (D_A == 0 )                      // Data / Address bit received. 0 = address, 1 = data.
-    {
-        read = SSPBUF & 0x01;           // Last addressbit holds requested mode
-        //BF = 0; // gebeurt impliciet door SSPBUF te lezen?
+    if (SSPIF) {
         
-        firstWrite = true;
-    }
-    else
-    {
-        if (read)
-        {
-            SSPBUF = registers[pointer++];
-        }
-        else
-        {
-            if (firstWrite)
-            {
-                firstWrite = false;
-                pointer = SSPBUF;
-            }
-            else
-            {
-                registers[pointer++] = SSPBUF;
-            }
-        }
-    }
+        if (! D_NOT_A) {
+            //
+            // Slave Address 
+            //
+            i2c_byte_count = 0;
 
-    //D_A = 0; // lijkt me overbodig!
-    CKP = 1;                            // SCL may come high again to resume reception.
+            if (BF) {
+                // Discard slave address 
+                sspBuf = SSPBUF;    // Clear BF
+            }
+            
+            if (R_NOT_W) {                
+                // Reading - read from register map
+                SSPCON1bits.WCOL = 0;
+                SSPBUF           = i2c_reg_map[i2c_reg_addr++];
+            } 
+            
+        } else {
+            //
+            // Data bytes 
+            //
+            i2c_byte_count++;
+
+            if (BF) {
+                sspBuf = SSPBUF;    // Clear BF
+            }
+
+            if (R_NOT_W) {
+
+                // Multi-byte read - advance to next address
+                SSPCON1bits.WCOL = 0;
+                SSPBUF           = i2c_reg_map[i2c_reg_addr++];
+                // LATDbits.LATD6 = 1;
+                
+            } else {                
+
+                if (i2c_byte_count == 1) {
+                    // First write byte is register address
+                    i2c_reg_addr = sspBuf;
+
+                } else {
+                    // Write to register address - auto advance
+                    //   to allow multiple bytes to be written
+                    i2c_reg_map[i2c_reg_addr++] = sspBuf;
+                }
+            }
+        }
+        // Limit address to size of register map
+        i2c_reg_addr %= sizeof(i2c_reg_map);
+        
+        // Finally
+        SSPIF  = 0;            // Clear MSSP interrupt flag
+        CKP = 1;            // Release clock        
+    }    
+
+    return 0x8000;
 }
 
 
 unsigned char getI2CRegister()
 {
-    return pointer;
+    return i2c_reg_addr;
 }
 
 unsigned char getI2CData()
 {
-    return registers[pointer];
+    return i2c_reg_map[i2c_reg_addr];
 }
