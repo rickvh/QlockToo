@@ -43,16 +43,37 @@ unsigned char rtcGetHours(void)
 // writing the enabled flag will reset seconds.
 void InitRtc(void)
 {
+    // Get the current state of the oscillator (bit 0 of regiter 0x00)
     StartI2C(); // begin I2C communication
     IdleI2C();
     WriteI2C( DS1307_ADDRESS_WRITE );
     IdleI2C();
-    WriteI2C( 0x00 ); // register: seconds
+    WriteI2C( 0x00 ); // address to read
     IdleI2C();
-    WriteI2C( 0x00 ); // 0sec + enable clock
+    RestartI2C(); // Initiate a RESTART command
+    IdleI2C();
+    WriteI2C( DS1307_ADDRESS_READ );
+    IdleI2C();
+    _seconds = ReadI2C();
+    IdleI2C();
+    NotAckI2C();
     IdleI2C();
     StopI2C();
-
+    
+    if (_seconds & 0x01)
+    {
+        // We need to clear bit 0 of register 0x00 to enable the oscillator
+        StartI2C(); // begin I2C communication
+        IdleI2C();
+        WriteI2C( DS1307_ADDRESS_WRITE );
+        IdleI2C();
+        WriteI2C( 0x00 ); // register: seconds
+        IdleI2C();
+        WriteI2C( 0x00 ); // 0sec + enable clock
+        IdleI2C();
+        StopI2C();
+    }
+    
     // init: SQWE @1Hz
     StartI2C(); // begin I2C communication
     IdleI2C();
