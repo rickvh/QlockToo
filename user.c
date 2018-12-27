@@ -70,8 +70,11 @@ void i2cInitMaster()
 void i2cInitSlave()
 {
     TRISC |= 0b00011000;    // TRISC 3&4 (SCL & SDA) inputs
+    
+    SSPSTAT = 0x80; // 100Khz
     SSPADD = I2C_SLAVE_ADDR;
-    OpenI2C(SLAVE_7_STSP_INT, SLEW_OFF);
+    SSPCON1 = SSPCON1 & 0b11110000 | 0b00000110; // Slave mode, 7bit addr, no start- and stopbit interrupts
+    
     SEN = 1;                // Clock stretching enabled
     SSPIF = 0;
     SSPIE = 1;

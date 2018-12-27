@@ -304,7 +304,6 @@ void main(void)
                 }
                 break;
             case MODE_SLAVE:
-                leddriver_clear();
                 leddriver_screenbuffer[0] = slave_enabled ? 0xF000 : 0x0F00;
                 break;
             case MODE_ALL:

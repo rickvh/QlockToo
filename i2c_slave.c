@@ -29,73 +29,62 @@ void handleI2CISR()
 {
     unsigned char sspBuf;
     
-    if (SSPIF) {
-        if (! D_NOT_A) {
-            //
-            // Slave Address; ignore 
-            //
-            i2c_byte_count = 0;
+    if (BF) {
+        sspBuf = SSPBUF;    // Clear BF
+    }
 
-            if (BF) {
-                // Discard slave address 
-                sspBuf = SSPBUF;    // Clear BF
-            }
-            
-            if (R_NOT_W) {                
-                // Reading - read from register map
-                SSPCON1bits.WCOL = 0;
-                SSPBUF           = i2c_reg_addr;////getValue();
-                i2c_reg_addr++;
-            } 
+    /*
+     * Cases:
+     * - Write initiated: clear i2c_byte_count (next byte will be the address)
+     * - Write data: i2c_byte_count == 0 ? set address : set data
+     * - Read initiated: clear i2c_byte_count (unnecessary) + get data
+     * - Read data: get data
+     */
+
+    if (R_NOT_W) {
+        // Read - advance to next address
+        SSPCON1bits.WCOL = 0;
+        SSPBUF           = getValue();
+        i2c_reg_addr++;
+    } else if (D_NOT_A) {               
+        if (i2c_byte_count == 0) {
+            // First write byte is register address
+            i2c_reg_addr = sspBuf;
         } else {
-            //
-            // Data bytes 
-            //
-            i2c_byte_count++;
+            // Write to register address - auto advance
+            //   to allow multiple bytes to be written
+            setValue(sspBuf);
 
-            if (BF) {
-                sspBuf = SSPBUF;    // Clear BF
-            }
-
-            if (R_NOT_W) {
-                // Multi-byte read - advance to next address
-                SSPCON1bits.WCOL = 0;
-                SSPBUF           = i2c_reg_addr;//getValue();
-                i2c_reg_addr++;
-            } else {                
-                if (i2c_byte_count == 1) {
-                    // First write byte is register address
-                    i2c_reg_addr = sspBuf;
-                } else {
-                    // Write to register address - auto advance
-                    //   to allow multiple bytes to be written
-                    setValue(sspBuf);
-                    
-                    // TODO: als deze aan staat loopt het lezen 2 bytes voor??
-                    i2c_reg_addr+=4;
-//                    i2c_reg_addr=0xA0;
-                }
-            }
+            i2c_reg_addr++;
         }
+    }
         
-        // Finally
-        CKP = 1;            // Release clock
-        SSPIF  = 0;            // Clear MSSP interrupt flag        
-    }    
+    if (D_NOT_A) {
+        //
+        // Data bytes 
+        //
+        i2c_byte_count++;
+    } else {
+        //
+        // Slave Address
+        //
+        i2c_byte_count = 0;
+    }
+        
+    // Finally
+    CKP = 1;                // Release clock
+    SSPIF  = 0;             // Clear MSSP interrupt flag        
 }
 
 unsigned char getValue()
 {
-    
     if (i2c_reg_addr == ADDRESS_VERSION_MAJOR)
     {
-        return i2c_reg_addr;
-//        return MAJOR_FW_VAL;
+        return MAJOR_FW_VAL;
     }
     if (i2c_reg_addr == ADDRESS_VERSION_MINOR)
     {
-        return i2c_reg_addr;
-//        return MINOR_FW_VAL;
+        return MINOR_FW_VAL;
     }
     if (i2c_reg_addr == ADDRESS_BUTTONS_RESET)
     {
