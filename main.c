@@ -60,12 +60,8 @@ void main(void)
     /* Initialize I/O and Peripherals for application */
     InitQlockToo();
     usb_attached_at_start = USB_ATTACHED;
-    // TODO
-//    if (rtc_not_running)
-//    {
         InitRtc();
-//    }
-    loadSettings(&settings);
+    loadSettings(settings);
     leddriver_init();
     leddriver_brightness = 9;//settingsptr->brightness;
 
