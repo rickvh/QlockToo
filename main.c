@@ -51,7 +51,7 @@ const uint8_t enabled_modi_size = sizeof(enabled_modi) / sizeof(mode);
 /******************************************************************************/
 uint8_t current_mode;
 volatile bool rtc_updated;
-bool settings_updated, time_set, usb_attached_at_start;
+bool settings_updated, time_set, usb_attached_at_start, display_enabled = true;
 uint16_t i,j, tmp_uur, tmp_min;//just a simple counter
 uint8_t time_sec, time_min, time_hour, time_dow, ldr_value;
 uint16_t temprow, currentrow;
@@ -118,6 +118,9 @@ void main(void)
         {
             switch(enabled_modi[current_mode])
             {
+                case CLOCK:
+                    display_enabled = !display_enabled;
+                    break;
                 case BRIGHTNESS:
                     if (++settings.brightness >= 10)
                         settings.brightness = 0;
@@ -210,11 +213,14 @@ void main(void)
         {
             case CLOCK:
                 leddriver_clear();
+                if (display_enabled)
+                {
                     leddriver_setMinutes(time_hour, time_min);
                     if (settings.showMinutes)
                     {
                         leddriver_setCorners(time_min);
                     }
+                }
                 break;
             case SECONDS:
                 leddriver_clear();
