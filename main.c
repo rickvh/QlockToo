@@ -25,22 +25,26 @@
 /******************************************************************************/
 
 
-#define MODE_CLOCK              0
-#define MODE_SECONDS            1
-#define MODE_BRIGHTNESS         2
-#define MODE_TIME_SET_HOURS     3
-#define MODE_TIME_SET_MINS      4
-#define MODE_BRIGHTNESS_MODE    5
-#define MODE_SHOW_MINUTES       6
-#define MODE_LEDTEST            7
-#define MODE_LEDTEST_MANUAL     8
-#define MODE_ANIMATION_1        9
-#define MODE_OFF                10
-#define MODE_ALL                11
-#define MODE_LDR                12
+typedef enum
+{
+    CLOCK,
+    SECONDS,
+    BRIGHTNESS,
+    TIME_SET_HOURS,
+    TIME_SET_MINS,
+    BRIGHTNESS_MODE,
+    SHOW_MINUTES,
+    LEDTEST,
+    LEDTEST_MANUAL,
+    ANIMATION_1,
+    OFF,
+    ALL,
+    LDR
+} mode;
 
-
+const mode enabled_modi[] = {CLOCK, SECONDS, BRIGHTNESS, TIME_SET_HOURS, TIME_SET_MINS, SHOW_MINUTES, ALL};
 const far unsigned char Firmware_Version[] @ FIRMWARE_VERSION = {MAJOR_FW_VAL, MINOR_FW_VAL, FW_VALID};
+const uint8_t enabled_modi_size = sizeof(enabled_modi) / sizeof(mode);
 
 /******************************************************************************/
 /* User Global Variable Declaration                                           */
@@ -105,42 +109,42 @@ void main(void)
             GIE = 1;
 
             current_mode++;
-            if (current_mode > MODE_ALL)
+            if (current_mode >= enabled_modi_size)
                 current_mode = 0;
         }
 
         // +
         if(button2Pressed())
         {
-            switch(current_mode)
+            switch(enabled_modi[current_mode])
             {
-                case MODE_BRIGHTNESS:
+                case BRIGHTNESS:
                     if (++settings.brightness >= 10)
                         settings.brightness = 0;
                     leddriver_brightness = settings.brightness;
                     //settings_updated = true;
                     break;
-                case MODE_BRIGHTNESS_MODE:
+                case BRIGHTNESS_MODE:
                     if (++settings.brightnessMode > 1)
                         settings.brightnessMode = 0;
                     break;
-                case MODE_SHOW_MINUTES:
+                case SHOW_MINUTES:
                     settings.showMinutes = !settings.showMinutes;
                     break;
-                case MODE_TIME_SET_HOURS:
+                case TIME_SET_HOURS:
                     if (++time_hour == 24)
                         time_hour = 0;
                     rtcSetHours(time_hour);
                     time_set = true;
                     break;
-                case MODE_TIME_SET_MINS:
+                case TIME_SET_MINS:
                     if (++time_min == 60)
                         time_min = 0;
                     rtcSetMinutes(time_min);
                     rtcSetSeconds(0);
                     time_set = true;
                     break;
-                case MODE_LEDTEST_MANUAL:
+                case LEDTEST_MANUAL:
                     temprow = temprow >> 1;
                     if (temprow < 0x0020)
                     {
@@ -181,7 +185,7 @@ void main(void)
             }
         }
 
-        if (rtc_updated && (current_mode == MODE_CLOCK || current_mode == MODE_SECONDS))
+        if (rtc_updated && (enabled_modi[current_mode] == CLOCK || enabled_modi[current_mode] == SECONDS))
         {
             ReadRtc();
             time_hour = rtcGetHours();
@@ -202,9 +206,9 @@ void main(void)
             __delay_ms(10);
         }
 
-        switch(current_mode)
+        switch(enabled_modi[current_mode])
         {
-            case MODE_CLOCK:
+            case CLOCK:
                 leddriver_clear();
                     leddriver_setMinutes(time_hour, time_min);
                     if (settings.showMinutes)
@@ -212,24 +216,24 @@ void main(void)
                         leddriver_setCorners(time_min);
                     }
                 break;
-            case MODE_SECONDS:
+            case SECONDS:
                 leddriver_clear();
                 for (i = 0; i < 7; i++) {
                     leddriver_screenbuffer[1 + i] |= numbers[time_sec/10][i] << 11;
                     leddriver_screenbuffer[1 + i] |= numbers[time_sec%10][i] << 5;
                 }
                 break;
-            case MODE_BRIGHTNESS:
+            case BRIGHTNESS:
                 leddriver_clear();
                 for (i = 0; i < 7; i++) {
                     leddriver_screenbuffer[1 + i] |= symbols[0][i] << 11;
                     leddriver_screenbuffer[1 + i] |= numbers[settings.brightness][i] << 5;
                 }
                 break;
-            case MODE_OFF:
+            case OFF:
                 leddriver_clear();
                 break;
-            case MODE_TIME_SET_HOURS:
+            case TIME_SET_HOURS:
                 leddriver_clear();
                 leddriver_screenbuffer[3] = 0x0040;
                 leddriver_screenbuffer[7] = 0x0040;
@@ -238,7 +242,7 @@ void main(void)
                     leddriver_screenbuffer[i + 3] |= numbers5[time_hour%10][i] << 9;
                 }
                 break;
-            case MODE_TIME_SET_MINS:
+            case TIME_SET_MINS:
                 leddriver_clear();
                 leddriver_screenbuffer[3] = 0x4000;
                 leddriver_screenbuffer[7] = 0x4000;
@@ -247,7 +251,7 @@ void main(void)
                     leddriver_screenbuffer[i + 3] |= numbers5[time_min%10][i] << 5;
                 }
                 break;
-            case MODE_BRIGHTNESS_MODE:
+            case BRIGHTNESS_MODE:
                 leddriver_clear();
                 for (i = 0; i < 5; i++) {
                     leddriver_screenbuffer[1 + i] = symbols[0][i] << 11;
@@ -257,7 +261,7 @@ void main(void)
                         leddriver_screenbuffer[1 + i] |= letters['M' - 'A'][i] << 5;
                 }
                 break;
-            case MODE_SHOW_MINUTES:
+            case SHOW_MINUTES:
                 leddriver_clear();
                 if (settings.showMinutes)
                 {
@@ -270,7 +274,7 @@ void main(void)
                     }
                 }
                 break;
-            case MODE_LEDTEST:
+            case LEDTEST:
                 temprow = temprow >> 1;
                 if (temprow < 0x0020)
                 {
@@ -284,11 +288,11 @@ void main(void)
                 leddriver_clear();
                 leddriver_screenbuffer[currentrow] = temprow;
                 break;
-            case MODE_LEDTEST_MANUAL:
+            case LEDTEST_MANUAL:
                 leddriver_clear();
                 leddriver_screenbuffer[currentrow] = temprow;
                 break;
-            case MODE_ANIMATION_1:
+            case ANIMATION_1:
                 leddriver_clear();
                 for (i=0; i<11; i++)
                 {
@@ -298,13 +302,13 @@ void main(void)
                     __delay_ms(1);
                 }
                 break;
-            case MODE_ALL:
+            case ALL:
                 for (i=0; i<11; i++)
                 {
                     leddriver_screenbuffer[i] = 0xFFFF;
                 }
                 break;
-            case MODE_LDR:
+            case LDR:
                 leddriver_clear();
                 for (i=0; i<11; i++)
                 {
